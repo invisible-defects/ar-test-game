@@ -25,7 +25,8 @@ public class InteractionManager : MonoBehaviour
 
     void Update()
     {
-        if(placementPoseLocked) {
+        if(placementPoseLocked) 
+        {
             return;
         }
         UpdatePlacementPose();
@@ -34,23 +35,32 @@ public class InteractionManager : MonoBehaviour
 
     public void LockPlacementIndicator()
     {
-        // TODO: check if game already started in GameManager
-        if(placementIndicator.activeSelf && placementPoseIsValid && !placementPoseLocked || placementPoseLocked) {
+        // Check GameManager state
+        if(gameManager.getState() != "notStarted") 
+        {
+            return;
+        }
+        // Check all the placement conditions
+        if(placementIndicator.activeSelf && placementPoseIsValid && !placementPoseLocked || placementPoseLocked) 
+        {
             placementPoseLocked = !placementPoseLocked;
         }
     }
 
-    public bool getPlacementPoseLocked() {
+    public bool getPlacementPoseLocked() 
+    {
         return placementPoseLocked;
     }
 
     private void UpdatePlacementIndicator()
     {
-        if(placementPoseIsValid) {
+        if(placementPoseIsValid) 
+        {
             placementIndicator.SetActive(true);
             placementIndicator.transform.SetPositionAndRotation(placementPose.position, placementPose.rotation);
         }
-        else {
+        else 
+        {
             placementIndicator.SetActive(false);
         }
     }
@@ -62,9 +72,9 @@ public class InteractionManager : MonoBehaviour
         arRaycast.Raycast(screenCenter, hits, TrackableType.Planes);
 
         placementPoseIsValid = hits.Count > 0;
-        if(placementPoseIsValid) {
+        if(placementPoseIsValid) 
+        {
             placementPose = hits[0].pose;
-
             var cameraForward = Camera.current.transform.forward;
             var cameraBearing = new Vector3(cameraForward.x, 0, cameraForward.z).normalized;
             placementPose.rotation = Quaternion.LookRotation(cameraBearing);
