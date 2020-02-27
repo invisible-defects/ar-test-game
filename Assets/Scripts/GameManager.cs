@@ -24,6 +24,7 @@ public class GameManager : MonoBehaviour
     // Gameobjects
     public GameObject lockButton;
     public GameObject startButton;
+    public GameObject gameOverButton;
     public GameObject obstaclesRoot;
     public InteractionManager interactionManager;
 
@@ -31,8 +32,8 @@ public class GameManager : MonoBehaviour
     private GameState state = new GameState("notStarted");
 
     // Variables
-    private float obstacleSpawnDelay = 4f; // sec
-    private float obstacleSpeed = 0.5f; // m/sec
+    private float obstacleSpawnDelay = 2.5f; // sec
+    private float obstacleSpeed = 0.6f; // m/sec
     private float lastObstacleSpawned = 0;
 
     public string getState() 
@@ -48,14 +49,33 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void endGame()
+    {
+        if(state.stage == "started")
+        {
+            state.stage = "gameOver";
+        }
+    }
+
+    public void startOver()
+    {
+        if(state.stage == "gameOver")
+        {
+            state.stage = "notStarted";
+            foreach(var obstacle in state.obstacles) 
+            {
+                Destroy(obstacle);
+            }
+            state.obstacles.Clear();
+        }
+    }
+
     void Update() 
     {   
         if(state.stage == "started") 
         {
             // Move spawned obstacles to the player
             moveObstacles();
-            // Check if the player hit any (or moved away from the playfield)
-            checkCollision();
             // Delete obstacles behind the player
             deleteObstacles();
             // Spawn new obstacles
@@ -72,18 +92,20 @@ public class GameManager : MonoBehaviour
         {
             lockButton.SetActive(false);
             startButton.SetActive(false);
+            gameOverButton.SetActive(false);
+        }
+        else if(state.stage == "gameOver")
+        {
+            lockButton.SetActive(false);
+            startButton.SetActive(false);
+            gameOverButton.SetActive(true);
         }
         else
         {
             lockButton.SetActive(true);
-            lockButton.SetActive(true);
+            startButton.SetActive(true);
+            gameOverButton.SetActive(false);
         }
-    }
-
-    private void checkCollision()
-    {
-        // TODO: finish
-        return;
     }
 
     private void generateObstacle()
@@ -113,12 +135,12 @@ public class GameManager : MonoBehaviour
     private void deleteObstacles()
     {
         foreach(var obstacle in state.obstacles) {
-            if(obstacle.transform.localPosition.z > 3)
+            if(obstacle.transform.localPosition.z > 2.4)
             {
-                state.obstacles.Remove(obstacle);
                 Destroy(obstacle);
             }
         }
+        state.obstacles.RemoveAll(obstacle => obstacle.transform.localPosition.z > 2.4);
     }
 
     private void moveObstacles()
