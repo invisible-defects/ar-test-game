@@ -12,7 +12,7 @@ public class InteractionManager : MonoBehaviour
     public GameManager gameManager;
     public GameObject placementIndicator;
     private ARSessionOrigin arOrigin;
-    private ARRaycastManager arRaycast;
+    public ARRaycastManager arRaycast;
     private Pose placementPose;
     private bool placementPoseIsValid = false;
     private bool placementPoseLocked = false;
@@ -20,7 +20,6 @@ public class InteractionManager : MonoBehaviour
     void Start()
     {
         arOrigin = FindObjectOfType<ARSessionOrigin>();
-        arRaycast = arOrigin.GetComponent(typeof(ARRaycastManager)) as ARRaycastManager;
     }
 
     void Update()
@@ -41,7 +40,7 @@ public class InteractionManager : MonoBehaviour
             return;
         }
         // Check all the placement conditions
-        if(placementIndicator.activeSelf && placementPoseIsValid && !placementPoseLocked || placementPoseLocked) 
+        if((placementPoseIsValid && !placementPoseLocked) || placementPoseLocked) 
         {
             placementPoseLocked = !placementPoseLocked;
         }

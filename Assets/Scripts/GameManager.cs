@@ -17,12 +17,23 @@ struct GameState
 
 public class GameManager : MonoBehaviour
 {
+    // Prefabs
+    [SerializeField]
+    private GameObject[] cubes = new GameObject[5];
+
+    // Gameobjects
     public GameObject lockButton;
     public GameObject startButton;
+    public GameObject obstaclesRoot;
+    public InteractionManager interactionManager;
+
+    // State
     private GameState state = new GameState("notStarted");
-    private float obstacleSpawnDelay = 2f; // sec
-    private float obstacleSpeed = 0.01f; // m/sec
-    private float lastObstacledSpawned = 0;
+
+    // Variables
+    private float obstacleSpawnDelay = 4f; // sec
+    private float obstacleSpeed = 0.5f; // m/sec
+    private float lastObstacleSpawned = 0;
 
     public string getState() 
     {
@@ -31,7 +42,7 @@ public class GameManager : MonoBehaviour
 
     public void startGame() 
     {
-        if(state.stage == "notStarted") 
+        if(state.stage == "notStarted" && interactionManager.getPlacementPoseLocked()) 
         {
             state.stage = "started";
         }
@@ -71,34 +82,40 @@ public class GameManager : MonoBehaviour
 
     private void checkCollision()
     {
-        throw new NotImplementedException();
+        // TODO: finish
+        return;
     }
 
     private void generateObstacle()
     {
         // Obstacle starting cell
-        int obstacleStart = Mathf.RoundToInt(UnityEngine.Random.Range(0, 4));
+        int obstacleStart = Mathf.RoundToInt(UnityEngine.Random.Range(0f, 4f));
         // Length of obstacle (amount of cells)
-        int obstaclelength = Mathf.Min(Mathf.RoundToInt(UnityEngine.Random.Range(1, 4)), 5 - obstacleStart);
+        int obstaclelength = Mathf.Min(Mathf.RoundToInt(UnityEngine.Random.Range(1f, 4f)), (5 - obstacleStart));
 
-        // TODO: instantiate prefab and add to state.obstacles
+        for(var i = obstacleStart; i < obstacleStart + obstaclelength; ++i) {
+            state.obstacles.Add(Instantiate(cubes[i], obstaclesRoot.transform));
+        }
     }
 
     private void spawnObstacles()
     {
-        lastObstacledSpawned += Time.deltaTime;
-        if(lastObstacledSpawned > obstacleSpawnDelay) 
+        lastObstacleSpawned += Time.deltaTime;
+        Debug.Log(lastObstacleSpawned);
+        if(lastObstacleSpawned > obstacleSpawnDelay) 
         {
-            lastObstacledSpawned = 0;
+            Debug.Log("OBSTACLE SPAWNED");
+            lastObstacleSpawned = 0;
             generateObstacle();
         }
     }
 
     private void deleteObstacles()
     {
-        foreach(GameObject obstacle in state.obstacles) {
-            if(obstacle.transform.position.z < -1) 
+        foreach(var obstacle in state.obstacles) {
+            if(obstacle.transform.localPosition.z > 3)
             {
+                state.obstacles.Remove(obstacle);
                 Destroy(obstacle);
             }
         }
@@ -106,11 +123,11 @@ public class GameManager : MonoBehaviour
 
     private void moveObstacles()
     {
-        foreach(GameObject obstacle in state.obstacles) 
+        foreach(var obstacle in state.obstacles) 
         {
-            var currentPosition = obstacle.transform.position;
-            currentPosition.z -= Time.deltaTime * obstacleSpeed;
-            obstacle.transform.SetPositionAndRotation(currentPosition, obstacle.transform.rotation);
+            var currentPosition = obstacle.transform.localPosition;
+            currentPosition.z += Time.deltaTime * obstacleSpeed;
+            obstacle.transform.localPosition = currentPosition;
         }
     }
 }
